@@ -2,10 +2,6 @@
 
 Official PyTorch implementation of **EAGLE**.
 
-<p align="center">
-  <img src="assets/eagle_overview.png" width="800">
-</p>
-
 ## 📋 Overview
 
 EAGLE is a novel framework for visual query localization in egocentric videos, featuring:
@@ -19,7 +15,7 @@ EAGLE is a novel framework for visual query localization in egocentric videos, f
 - [ ] Init Code
 - [ ] Add 2D inference code
 - [ ] Code optimization
-- [ ] Add re-organized test code, Jan 2024
+- [ ] Add re-organized test code
 - [ ] Optimize the json file for readable structure 
 - [ ] Set up Github pages 
 
