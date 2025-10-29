@@ -1,0 +1,62 @@
+# ============ EAGLE VQ3D Evaluation Configuration ============
+
+# Experiment
+exp_name: eagle_vq3d_eval
+output_dir: outputs/${exp_name}
+
+# Dataset
+data:
+  dataset_name: ego4d_vq3d
+  root_dir: data/ego4d/v2
+  annot_dir: ${data.root_dir}/annotations
+  clip_dir: ${data.root_dir}/clips
+  
+  split: vq_val_processed.json
+  
+  image_size: 448
+  num_workers: 4
+
+# Model
+model:
+  # VQL-2D model
+  vql2d:
+    checkpoint: checkpoints/eagle_vq2d_best.pth
+    memory_size: 50
+  
+  # VGGT for 3D geometry
+  vggt:
+    checkpoint: checkpoints/vggt_ego4d.pth
+    depth_scale: 1.0
+    uncertainty_threshold: 0.1
+
+# Evaluation
+evaluation:
+  batch_size: 1
+  
+  # Multi-view aggregation
+  aggregation:
+    phi: 0.333  # Weight for P_av
+    psi: 0.333  # Weight for P_lambda
+    mu: 0.333   # Weight for P_max
+    zeta: 1.0   # Uncertainty weight
+    lambda_threshold: 0.6  # For P_lambda calculation
+    confidence_threshold: 0.6  # Filter low-confidence frames
+  
+  # 3D localization
+  localization:
+    use_sim3_alignment: true
+    min_views: 3  # Minimum views for triangulation
+  
+  # Metrics
+  metrics:
+    distance_thresholds: [0.2, 0.3, 0.5]  # meters
+    
+  # Output
+  save_predictions: true
+  save_point_clouds: false
+  output_format: json
+
+# Logging
+logging:
+  log_interval: 50
+  verbose: true

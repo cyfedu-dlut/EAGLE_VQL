@@ -1,0 +1,123 @@
+# ============ EAGLE VQ2D Training Configuration ============
+
+# Experiment
+exp_name: eagle_vq2d_baseline
+output_dir: outputs/${exp_name}
+seed: 42
+
+# Dataset
+data:
+  dataset_name: ego4d_vq2d
+  root_dir: data/ego4d/v2
+  annot_dir: ${data.root_dir}/annotations
+  clip_dir: ${data.root_dir}/clips
+  
+  train_split: vq_train_processed.json
+  val_split: vq_val_processed.json
+  
+  # Preprocessing
+  image_size: 448
+  clip_length: 16  # Number of frames per training clip
+  stride: 8
+  num_workers: 8
+  
+  # Augmentation
+  augmentation:
+    enabled: true
+    color_jitter: 0.4
+    random_flip: 0.5
+    random_crop: true
+
+# Model
+model:
+  name: EAGLE_VQL2D
+  
+  # Backbone
+  backbone:
+    name: dinov2_vitb14
+    pretrained: true
+    freeze: true
+    feature_dim: 768
+  
+  # AMM Branch
+  amm:
+    memory_size: 50
+    pseudo_label_channels: 32
+    meta_learner_iters: 3
+    kernel_size: 3
+    regularizer: 0.01
+  
+  # GLM Branch
+  glm:
+    memory_size: 50
+    dcf_iters: 5
+    lambda_reg: 0.01
+    scale_factor: 1.5
+    gaussian_sigma: 2.0
+  
+  # Decoder
+  decoder:
+    seg_dim: 32
+    track_dim: 1
+    hidden_dim: 64
+
+# Training
+training:
+  # Optimizer
+  optimizer: adamw
+  lr: 0.0025
+  weight_decay: 0.05
+  betas: [0.9, 0.999]
+  
+  # Learning rate schedule
+  lr_schedule: linear_warmup_cosine
+  warmup_iters: 2500
+  max_iters: 25000
+  min_lr: 0.0
+  
+  # Loss
+  loss_weights:
+    segmentation: 1.0
+    tracking: 1.0  # rho in paper
+  lovasz_loss: true
+  hinge_loss: true
+  
+  # Training loop
+  batch_size: 8
+  num_epochs: 10
+  grad_clip: 1.0
+  accumulation_steps: 1
+  
+  # Memory update
+  memory_update:
+    confidence_threshold: 0.6
+    update_interval: 25  # Update every 25 frames during training
+    use_static: false
+
+# Validation
+validation:
+  interval: 1  # Validate every N epochs
+  batch_size: 1
+  save_predictions: false
+
+# Checkpointing
+checkpoint:
+  save_dir: ${output_dir}/checkpoints
+  save_interval: 1
+  keep_last: 3
+  resume: null  # Path to checkpoint to resume from
+
+# Logging
+logging:
+  use_wandb: false
+  wandb_project: eagle-vq2d
+  wandb_entity: your_entity
+  log_interval: 50
+  tensorboard: true
+
+# Distributed
+distributed:
+  enabled: false
+  backend: nccl
+  world_size: 1
+  rank: 0

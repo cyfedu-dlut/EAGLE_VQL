@@ -1,0 +1,82 @@
+# ============ EAGLE VQ2D Evaluation Configuration ============
+
+# Experiment
+exp_name: eagle_vq2d_eval
+output_dir: outputs/${exp_name}
+
+# Dataset
+data:
+  dataset_name: ego4d_vq2d
+  root_dir: data/ego4d/v2
+  annot_dir: ${data.root_dir}/annotations
+  clip_dir: ${data.root_dir}/clips
+  
+  split: vq_val_processed.json
+  
+  # Preprocessing
+  image_size: 448
+  num_workers: 4
+  
+  # SAM for initial mask
+  sam:
+    model_type: vit_h
+    checkpoint: checkpoints/sam_vit_h.pth
+    bbox_scale: 0.67  # 2/3 bbox scale as in paper
+
+# Model
+model:
+  name: EAGLE_VQL2D
+  checkpoint: null  # Path to trained checkpoint
+  
+  # Same as training
+  backbone:
+    name: dinov2_vitb14
+    pretrained: true
+    feature_dim: 768
+  
+  amm:
+    memory_size: 50
+    pseudo_label_channels: 32
+    meta_learner_iters: 3
+  
+  glm:
+    memory_size: 50
+    dcf_iters: 5
+    scale_factor: 1.5
+
+# Evaluation
+evaluation:
+  batch_size: 1
+  
+  # Memory update strategy
+  memory_update:
+    confidence_threshold: 0.6
+    update_first_100: true  # Update memory for first 100 frames
+    update_interval: 25  # Then update every 25 frames
+  
+  # Post-processing
+  postprocess:
+    apply_laplacian: true
+    laplacian_window: 100
+    laplacian_threshold: 100
+  
+  # Temporal localization
+  temporal_localization:
+    enabled: true
+    median_filter_window: 5
+    confidence_ratio: 0.8  # Threshold = 0.8 * max_confidence
+  
+  # Metrics
+  metrics:
+    iou_thresholds: [0.25, 0.5, 0.75]
+    spatial_distance_threshold: 64  # pixels
+    
+  # Output
+  save_predictions: true
+  save_visualizations: false
+  output_format: json  # json or pickle
+
+# Logging
+logging:
+  log_interval: 100
+  verbose: true
