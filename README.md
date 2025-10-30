@@ -190,7 +190,7 @@ eagle/
 This project is licensed under the MIT License
 
 ### 🙏Acknowledgements
-The codebase relies on some great repositories: [Ego4D-VQ2D](https://github.com/EGO4D/episodic-memory/tree/main/VQ2D), [Ego4D-VQ3D](https://github.com/EGO4D/episodic-memory/blob/main/VQ3D), [DINOv2](https://github.com/facebookresearch/dinov2), [Segment Anything\(SAM\)](https://github.com/facebookresearch/segment-anything), [VGGT](https://github.com/facebookresearch/vggt) and many other inspiring works in the community. -->
+The codebase relies on some great repositories: [Ego4D-VQ2D](https://github.com/EGO4D/episodic-memory/tree/main/VQ2D), [Ego4D-VQ3D](https://github.com/EGO4D/episodic-memory/blob/main/VQ3D), [DINOv2](https://github.com/facebookresearch/dinov2), [Segment Anything\(SAM\)](https://github.com/facebookresearch/segment-anything), [VGGT](https://github.com/facebookresearch/vggt), [PyTracking](https://github.com/visionml/pytracking) and many other inspiring works in the community. -->
 
 ### 📧 Contact
 For questions and feedback, please contact:
