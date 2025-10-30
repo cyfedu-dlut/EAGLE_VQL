@@ -24,6 +24,7 @@ EAGLE is a novel framework for visual query localization in egocentric videos, f
 - [ ] Additional datasets support
 - [ ] Model compression and quantization
 
+
 ## 🔧 Installation
 
 ### Requirements
@@ -158,6 +159,7 @@ python tools/inference.py \
 # View tensorboard logs
 tensorboard --logdir output/vq2d/tensorboard
 ```
+
 ### 📁 Project Structure
 ```bash
 eagle/
@@ -202,4 +204,4 @@ Email: yfcao@mail.dlut.edu.cn
   booktitle={AAAI Conference on Artificial Intelligence},
   year={2025}
 }
-```
+``` -->
