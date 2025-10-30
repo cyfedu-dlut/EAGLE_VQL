@@ -1,0 +1,70 @@
+# Base configuration for VQ3D task
+
+MODEL:
+  TASK: 'vq3d'
+  
+  BACKBONE:
+    NAME: 'dinov2_vitb14'
+    FEATURE_DIM: 768
+    PRETRAINED: True
+    FREEZE: False
+  
+  AMM:
+    FEATURE_DIM: 768
+    MEMORY_SIZE: 10
+    META_LEARNER_ITERS: 5
+  
+  GLM:
+    FEATURE_DIM: 768
+    MEMORY_SIZE: 10
+    DCF_ITERS: 3
+  
+  DECODER:
+    FEATURE_DIM: 768
+    HIDDEN_DIM: 256
+    FUSION_TYPE: 'learned'
+  
+  VQ3D:
+    USE_3D_REASONING: True
+    USE_LONG_TERM_MEMORY: True
+    LONG_TERM_MEMORY_SIZE: 50
+  
+  TEMPORAL:
+    FEATURE_DIM: 768
+    HIDDEN_DIM: 256
+    NUM_FRAMES: 8
+    AGGREGATION_TYPE: 'transformer'
+    PREDICTION_HORIZON: 5
+
+DATASETS:
+  TRAIN: ('ego4d_vq3d_train',)
+  TEST: ('ego4d_vq3d_val',)
+  ROOT: './data'
+
+DATALOADER:
+  NUM_WORKERS: 4
+  BATCH_SIZE: 4
+  NUM_FRAMES: 8
+  SAMPLING_STRATEGY: 'uniform'
+
+INPUT:
+  IMAGE_SIZE: (448, 448)
+
+AUGMENTATION:
+  ENABLED: True
+  HORIZONTAL_FLIP: 0.3
+  ROTATION_DEGREES: 5
+
+SOLVER:
+  OPTIMIZER: 'adamw'
+  BASE_LR: 0.00005
+  WEIGHT_DECAY: 0.0001
+  LR_SCHEDULER: 'warmup_cosine'
+  WARMUP_EPOCHS: 5
+  MAX_EPOCHS: 100
+  CHECKPOINT_PERIOD: 10
+  EVAL_PERIOD: 5
+
+OUTPUT:
+  DIR: './output/vq3d'
+  USE_TENSORBOARD: True

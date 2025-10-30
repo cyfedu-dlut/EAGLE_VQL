@@ -1,34 +1,51 @@
+"""
+Setup script for EAGLE package.
+"""
+
 from setuptools import setup, find_packages
+import os
 
-with open("README.md", "r", encoding="utf-8") as f:
-    long_description = f.read()
+# Read long description from README
+def read_long_description():
+    with open('README.md', 'r', encoding='utf-8') as f:
+        return f.read()
 
-with open("requirements.txt", "r", encoding="utf-8") as f:
-    requirements = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+# Read requirements
+def read_requirements():
+    with open('requirements.txt', 'r') as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
-    name="eagle-vql",
-    version="1.0.0",
-    author="yfcao",
-    author_email="yfcao@mail.dlut.edu.cn",
-    description="",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/cyfedu-dlut/EAGLE_VQL",
-    packages=find_packages(),
+    name='eagle',
+    version='1.0.0',
+    description='EAGLE',
+    long_description=read_long_description(),
+    long_description_content_type='text/markdown',
+    author='YFCao',
+    author_email='yfcao@mail.dlut.edu.cn',
+    url='',
+    license='MIT',
+    packages=find_packages(exclude=['tests', 'tools', 'configs']),
+    install_requires=read_requirements(),
+    python_requires='>=3.8',
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Scientific/Engineering :: Image Recognition',
     ],
-    python_requires=">=3.8",
-    install_requires=requirements,
+    keywords='computer-vision deep-learning segmentation tracking visual-queries egocentric',
     entry_points={
-        "console_scripts": [
-            "eagle-train=tools.train_vq2d:main",
-            "eagle-eval=tools.eval_vq2d:main",
-            "eagle-inference=tools.inference:main",
+        'console_scripts': [
+            'eagle-train=tools.train:main',
+            'eagle-test=tools.test:main',
+            'eagle-inference=tools.inference:main',
         ],
     },
 )

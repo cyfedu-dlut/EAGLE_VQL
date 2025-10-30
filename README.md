@@ -2,10 +2,6 @@
 
 Official PyTorch implementation of **EAGLE**.
 
-<p align="center">
-  <img src="assets/eagle_overview.png" width="800">
-</p>
-
 ## 📋 Overview
 
 EAGLE is a novel framework for visual query localization in egocentric videos, featuring:
@@ -15,15 +11,20 @@ EAGLE is a novel framework for visual query localization in egocentric videos, f
 - **📐 3D Localization**: Multi-view aggregation with VGGT integration
 - **🚀 State-of-the-Art**: Top performance on Ego4D VQ2D & VQ3D benchmarks
 
-## TODO List
-- [ ] Init Code
-- [ ] Add 2D inference code
-- [ ] Code optimization
-- [ ] Add re-organized test code, Jan 2024
-- [ ] Optimize the json file for readable structure 
-- [ ] Set up Github pages 
+## 🚧 TODO List
+- [x] Release the codebase(core modules)
+- [x] Add inference code
+- [x] Code optimization
+- [x] Add re-organized test code
+- [x] Optimize the json file for readable structure 
+- [x] Support for additional backbones (SAM, CLIP)
+- [ ] Real-time inference optimization
+- [ ] Mobile deployment support
+- [ ] Integration with robotics frameworks
+- [ ] Additional datasets support
+- [ ] Model compression and quantization
 
-<!-- ## 🔧 Installation
+## 🔧 Installation
 
 ### Requirements
 - Python >= 3.8
@@ -50,13 +51,13 @@ pip install -e .
 
 ### 📦Data Preparation
 #### 1. Download the Ego4D Dataset
-Follow [here](https://github.com/EGO4D/episodic-memory/tree/main/VQ2D).
+Follow [here](https://github.com/EGO4D/episodic-memory/tree/main/VQ2D) and organize the data as following structure
 
 ```bash
 # Download Ego4D videos and annotations
 bash scripts/download_ego4d.sh --output_dir data/ego4d
 
-# structure:
+# Structure
 # data/ego4d/
 # ├── v2/
 # │   ├── annotations/
@@ -67,105 +68,131 @@ bash scripts/download_ego4d.sh --output_dir data/ego4d
 # │       ├── {video_uid}.mp4
 # │       └── ...
 ```
-
-#### 2. Extract Video Clips
+#### 2. Process annotations
 ```bash
-python scripts/extract_clips.py \
-    --input_dir data/ego4d/v2/videos \
-    --annot_path data/ego4d/v2/annotations/vq_train.json \
-    --output_dir data/ego4d/v2/clips \
-    --num_workers 16
+python tools/prepare_ego4d_data.py \
+    --data-dir ./data/ego4d \
+    --output-dir ./data/ego4d_processed
 ```
 
-#### 3.Preprocess Annotations
+### 📥 Download Pretrained Weights of DINOv2
 ```bash
-python scripts/preprocess_annotations.py \
-    --input_path data/ego4d/v2/annotations/vq_train.json \
-    --output_path data/ego4d/v2/annotations/vq_train_processed.json \
-    --clip_dir data/ego4d/v2/clips
+bash scripts/download_dinov2.sh
 ```
 
-### 🎓Training: Train VQ2D Model
+### 🎯 Training
+#### VQ2D
 ```bash
 # Single GPU
-python tools/train_vq2d.py --config configs/vq2d_train.yaml
+python tools/train.py \
+    --config-file configs/vq2d_base.yaml \
+    --task vq2d
 
-# Multi-GPU (DDP)
-python -m torch.distributed.launch --nproc_per_node=4 \
-    tools/train_vq2d.py --config configs/vq2d_train.yaml
+# Multi-GPU (Distributed)
+python -m torch.distributed.launch \
+    --nproc_per_node=4 \
+    tools/train.py \
+    --config-file configs/vq2d_base.yaml \
+    --task vq2d \
+    --num-gpus 4
 ```
-### 📊Evaluation
-#### VQ2D Evaluation
+#### VQ3D
 ```bash
-python tools/eval_vq2d.py \
-    --config configs/vq2d_eval.yaml \
-    --checkpoint checkpoints/eagle_vq2d_best.pth \
-    --split val
+# Single GPU
+python tools/train.py \
+    --config-file configs/vq3d_base.yaml \
+    --task vq3d
+
+# Multi-GPU
+python -m torch.distributed.launch \
+    --nproc_per_node=4 \
+    tools/train.py \
+    --config-file configs/vq3d_base.yaml \
+    --task vq3d \
+    --num-gpus 4
 ```
-#### VQ3D Evaluation
+
+### Custom Configuration
+You can override config options via command line:
 ```bash
-python tools/eval_vq3d.py \
-    --config configs/vq3d_eval.yaml \
-    --checkpoint checkpoints/eagle_vq2d_best.pth \
-    --split val \
-    --vggt_model_path checkpoints/vggt.pth
-```
-### 🎯Inference 
-#### Quick Demo
-```python
-from eagle import EAGLE_VQL2D
-import cv2
-import torch
-
-# Load model
-model = EAGLE_VQL2D(feature_dim=768, memory_size=50)
-model.load_state_dict(torch.load('checkpoints/eagle_vq2d_best.pth'))
-model.eval()
-
-# Load query and video
-query_image = cv2.imread('query.jpg')
-query_mask = cv2.imread('query_mask.png', 0)
-video_frames = [...]  # List of video frames
-
-# Initialize with query
-query_tensor = preprocess_image(query_image)
-mask_tensor = preprocess_mask(query_mask)
-model.initialize(query_tensor, mask_tensor)
-
-# Process video
-results = []
-for frame in video_frames:
-    frame_tensor = preprocess_image(frame)
-    pred_mask, confidence = model(frame_tensor)
-    results.append({'mask': pred_mask, 'confidence': confidence})
+python tools/train.py \
+    --config-file configs/vq2d_base.yaml \
+    --task vq2d \
+    SOLVER.BASE_LR 0.0002 \
+    SOLVER.MAX_EPOCHS 100 \
+    DATALOADER.BATCH_SIZE 16
 ```
 
-#### Command Line Inference
+### 🧪 Quick Evaluation
+#### Evaluate VQ2D
+```bash
+python tools/test.py \
+    --config-file configs/vq2d_base.yaml \
+    --weights output/vq2d/checkpoints/best_model.pth \
+    --task vq2d \
+    --save-predictions \
+    --visualize
+```
+#### Evaluate VQ3D
+```bash
+python tools/test.py \
+    --config-file configs/vq3d_base.yaml \
+    --weights output/vq3d/checkpoints/best_model.pth \
+    --task vq3d \
+    --save-predictions \
+    --visualize
+```
+### 🔮 Quick Inference
 ```bash
 python tools/inference.py \
-    --checkpoint checkpoints/eagle_vq2d_best.pth \
-    --query_image examples/query.jpg \
-    --query_bbox 100,100,200,200 \
-    --video examples/video.mp4 \
-    --output results/
+    --config-file configs/vq2d_base.yaml \
+    --weights output/vq2d/checkpoints/best_model.pth \
+    --query-image examples/query.jpg \
+    --query-mask examples/query_mask.png \
+    --search-image examples/search.jpg \
+    --visualize
 ```
 
+### 📊 Monitor Training
+```bash
+# View tensorboard logs
+tensorboard --logdir output/vq2d/tensorboard
+```
 ### 📁 Project Structure
 ```bash
-EAGLE/
-├── configs/              # Configuration files
-├── eagle/                # Core package
-│   ├── models/          # Model implementations
-│   ├── data/            # Dataset & data loading
-│   ├── evaluation/      # Evaluation metrics
-│   └── utils/           # Utilities
-├── scripts/             # Data preparation scripts
-├── tools/               # Training & evaluation tools
-└── notebooks/           # Jupyter notebooks
+eagle/
+├── configs/                    # Configuration files
+│   ├── vq2d_base.yaml
+│   └── vq3d_base.yaml
+├── eagle/                      # Main package
+│   ├── config/                 # Configuration system
+│   ├── data/                   # Data loading and processing
+│   │   ├── datasets/           # Dataset implementations
+│   │   └── transforms/         # Data augmentation
+│   ├── modeling/               # Model architectures
+│   │   ├── backbone/           # Backbone networks
+│   │   ├── memory/             # Memory modules (AMM & GLM)
+│   │   ├── decoder/            # Decoder networks
+│   │   ├── temporal/           # Temporal modeling
+│   │   └── meta_arch/          # Meta architectures
+│   ├── engine/                 # Training and evaluation
+│   └── utils/                  # Utility functions
+├── tools/                      # Scripts
+│   ├── train.py               # Training script
+│   ├── test.py                # Evaluation script
+│   └── inference.py           # Inference script
+└── tests/                      # Unit tests
 ```
+
+### 📝 License
+This project is licensed under the MIT License
 
 ### 🙏Acknowledgements
 The codebase relies on some great repositories: [Ego4D-VQ2D](https://github.com/EGO4D/episodic-memory/tree/main/VQ2D), [Ego4D-VQ3D](https://github.com/EGO4D/episodic-memory/blob/main/VQ3D), [DINOv2](https://github.com/facebookresearch/dinov2), [Segment Anything\(SAM\)](https://github.com/facebookresearch/segment-anything), [VGGT](https://github.com/facebookresearch/vggt) and many other inspiring works in the community. -->
+
+### 📧 Contact
+For questions and feedback, please contact:
+Email: yfcao@mail.dlut.edu.cn
 
 <!-- ### 📝Citation
 ```bibtex
@@ -175,4 +202,4 @@ The codebase relies on some great repositories: [Ego4D-VQ2D](https://github.com/
   booktitle={AAAI Conference on Artificial Intelligence},
   year={2025}
 }
-``` -->
+```

@@ -1,0 +1,58 @@
+# Base configuration for VQ2D task
+
+MODEL:
+  TASK: 'vq2d'
+  
+  BACKBONE:
+    NAME: 'dinov2_vitb14'
+    FEATURE_DIM: 768
+    PRETRAINED: True
+    FREEZE: False
+  
+  AMM:
+    FEATURE_DIM: 768
+    MEMORY_SIZE: 10
+    META_LEARNER_ITERS: 5
+    LEARNING_RATE: 0.01
+  
+  GLM:
+    FEATURE_DIM: 768
+    MEMORY_SIZE: 10
+    DCF_ITERS: 3
+  
+  DECODER:
+    FEATURE_DIM: 768
+    HIDDEN_DIM: 256
+    FUSION_TYPE: 'learned'
+
+DATASETS:
+  TRAIN: ('ego4d_vq2d_train',)
+  TEST: ('ego4d_vq2d_val',)
+  ROOT: './data'
+
+DATALOADER:
+  NUM_WORKERS: 4
+  BATCH_SIZE: 8
+  NUM_FRAMES: 1
+
+INPUT:
+  IMAGE_SIZE: (448, 448)
+
+AUGMENTATION:
+  ENABLED: True
+  HORIZONTAL_FLIP: 0.5
+  ROTATION_DEGREES: 10
+
+SOLVER:
+  OPTIMIZER: 'adamw'
+  BASE_LR: 0.0001
+  WEIGHT_DECAY: 0.0001
+  LR_SCHEDULER: 'warmup_cosine'
+  WARMUP_EPOCHS: 3
+  MAX_EPOCHS: 50
+  CHECKPOINT_PERIOD: 10
+  EVAL_PERIOD: 5
+
+OUTPUT:
+  DIR: './output/vq2d'
+  USE_TENSORBOARD: True
