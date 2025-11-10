@@ -17,7 +17,7 @@ EAGLE is a novel framework for visual query localization in egocentric videos, f
 - [x] Release the codebase(core modules)
 - [x] Code optimization
 - [x] Optimize the json file for readable structure 
-- [] Training and inference code
+- [ ] Training and inference code
 - [ ] Real-time inference optimization
 - [ ] Mobile deployment support
 - [ ] Integration with robotics frameworks
